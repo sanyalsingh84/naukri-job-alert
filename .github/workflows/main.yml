@@ -1,28 +1,47 @@
 name: Naukri Job Alert
 
+# Trigger manually or on an hourly schedule
 on:
   schedule:
-    - cron: '0 * * * *' # Runs every hour
-  workflow_dispatch: # Allows manual triggering from the Actions tab
+    - cron: "0 * * * *" # Every hour
+  workflow_dispatch: # Manual trigger
 
 jobs:
-  run-script:
+  run-job-alert:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      # 2️⃣ Set up Node.js
+      - name: Set up Node.js 18
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: "18"
+          cache: "npm"
 
+      # 3️⃣ Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Run the job alert script
+      # 4️⃣ Validate required secrets
+      - name: Validate secrets
+        run: |
+          if [ -z "${{ secrets.DB_HOST }}" ]; then echo "Error: DB_HOST is not set."; exit 1; fi
+          if [ -z "${{ secrets.DB_PORT }}" ]; then echo "Error: DB_PORT is not set."; exit 1; fi
+          if [ -z "${{ secrets.DB_USER }}" ]; then echo "Error: DB_USER is not set."; exit 1; fi
+          if [ -z "${{ secrets.DB_PASSWORD }}" ]; then echo "Error: DB_PASSWORD is not set."; exit 1; fi
+          if [ -z "${{ secrets.DB_NAME }}" ]; then echo "Error: DB_NAME is not set."; exit 1; fi
+          if [ -z "${{ secrets.TELEGRAM_BOT_TOKEN }}" ]; then echo "Error: TELEGRAM_BOT_TOKEN is not set."; exit 1; fi
+          if [ -z "${{ secrets.TELEGRAM_CHAT_ID }}" ]; then echo "Error: TELEGRAM_CHAT_ID is not set."; exit 1; fi
+          if [ -z "${{ secrets.SEARCH_URL }}" ]; then echo "Error: SEARCH_URL is not set."; exit 1; fi
+          echo "All required secrets are set."
+
+      # 5️⃣ Run the Naukri job alert script
+      - name: Run job alert script
+        id: run_script
         run: node index.js
         env:
           CI: true
@@ -34,3 +53,12 @@ jobs:
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
+        continue-on-error: true
+
+      # 6️⃣ Notify via Telegram if script failed
+      - name: Notify on failure
+        if: steps.run_script.outcome == 'failure'
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+          -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+          -d text="⚠️ Naukri Job Alert workflow failed in GitHub Actions! Check logs."
