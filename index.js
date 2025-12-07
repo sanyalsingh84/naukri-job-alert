@@ -5,7 +5,7 @@ import { init, getSeenJobs, addSeenJobs } from './src/database.js';
 import logger from './src/logger.js';
 
 // ==== CONFIG ====
-const SEARCH_URL = process.env.SEARCH_URL || "https://www.naukri.com/react-dot-js-nextjs-jobs-in-delhi-ncr?k=react.js%2C%20nextjs&l=delhi%20%2F%20ncr&experience=3&nignbevent_src=jobsearchDeskGNB";
+const SEARCH_URL = process.env.SEARCH_URL || "https://www.naukri.com/react-dot-js-nextjs-jobs-in-delhi-ncr?k=react.js%2C%20nextjs&l=delhi%20%2F%20ncr%2C%20hyderabad%2C%20pune&nignbevent_src=jobsearchDeskGNB&jobAge=1&experience=4&ctcFilter=10to15&ctcFilter=15to25&ctcFilter=6to10&ctcFilter=25to50";
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 // ===============
