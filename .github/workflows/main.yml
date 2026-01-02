@@ -3,7 +3,7 @@ name: Naukri Job Alert
 # Trigger manually or on an hourly schedule
 on:
   schedule:
-    - cron: "0 * * * *" # Every hour
+    - cron: "*/30 * * * *" # Every half an hour
   workflow_dispatch: # Manual trigger
 
 jobs:
